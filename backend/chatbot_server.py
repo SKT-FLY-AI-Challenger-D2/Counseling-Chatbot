@@ -5,7 +5,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
+#from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_core.prompts import PromptTemplate 
 from langchain_community.document_loaders import TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -15,6 +16,7 @@ from langchain_core.output_parsers import StrOutputParser
 # 환경 변수 로드
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 app = FastAPI(title="Aespa Love Consultant API (King-receiving Ver. 2.0)")
 
@@ -27,8 +29,21 @@ app.add_middleware(
 )
 
 # 1. 모델 및 DB 설정
-embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
-llm = ChatOpenAI(temperature=0.7, model_name="gpt-4o") # 창의적인 드립을 위해 temperature를 약간 높임 (0 -> 0.7)
+#embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")
+
+#llm = ChatOpenAI(temperature=0.7, model_name="gpt-4o") # 창의적인 드립을 위해 temperature를 약간 높임 (0 -> 0.7)
+
+
+llm = ChatGoogleGenerativeAI(
+    model="gemini-2.5-flash-lite",
+    temperature=1.0,  # Gemini 3.0+ defaults to 1.0
+    max_tokens=None,
+    timeout=None,
+    max_retries=2,
+    # other params...
+)
+    
 
 def prepare_aespa_system():
     data_dir = "./data"
@@ -63,7 +78,12 @@ def prepare_aespa_system():
     )
     return vectorstore
 
-vector_db = prepare_aespa_system()
+#vector_db = prepare_aespa_system()
+vector_db = Chroma(
+    persist_directory="./chroma_db",
+    embedding_function=embeddings,
+    collection_name="my_db",
+)
 
 # 2. 분류 체인
 classify_prompt = PromptTemplate.from_template("""

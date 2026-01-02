@@ -28,8 +28,7 @@ SKT FLY AI 8기 2팀 demo 연애 상담 챗봇 시스템 (React Frontend + Pytho
 ### 1. Python 백엔드 서버 실행
 
 #### 사전 작업
-- backend/.env 파일에 `OPENAI_API_KEY` 입력
-- backend/data/ 디렉토리에 적절한 `.txt` 파일 추가
+- backend/.env 파일에 `GEMINI_API_KEY` 입력
 
 **터미널 1:**
 ```bash
